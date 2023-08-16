@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const reactionSchema = require('./Reaction');
+const Thought = require('./Thoguht');
 
 // Schema to create Student model
 const userSchema = new Schema(
@@ -7,21 +8,30 @@ const userSchema = new Schema(
         username: {
             type: String,
             required: true,
-            // Unique
-            // Trimmed
+            unique: true,
+            trimmed: true,
         },
         email: {
             type: String,
-            required: true,
-            // Unique
-            // Must match a valid email address (look into Mongoose's matching validation)
+            unique: true,
+            validate: {
+                validator: function (v) {
+                    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+                },
+                message: "Please enter a valid email"
+            },
+            required: [true, "Email required"]
         },
-        thoughts: {
-            // Array of _id values referencing the Thought model
-        },
-        friends: {
-            // Array of _id values referencing the User model (self-reference)
-        },
+        thoughts: [{
+            type: Schema.Types.ObjectId,
+            ref: "Thought"
+        }
+        ],
+        friends: [{
+            type: Schema.Types.ObjectId,
+            ref: "User",
+        }
+        ],
         reactions: [reactionSchema],
     },
     {
@@ -30,6 +40,10 @@ const userSchema = new Schema(
         },
     }
 );
+
+// userSchema.virtual("friendCount").get(function () {
+//     return this.friends.length;
+//   });
 
 const User = model('user', userSchema);
 
