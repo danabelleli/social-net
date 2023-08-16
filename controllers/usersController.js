@@ -38,6 +38,22 @@ module.exports = {
         }
     },
 
+    // update user by id
+    async updateUser(req, res) {
+        await User.findOneAndUpdate({ _id: req.params.userId }, req.body, {
+            new: true,
+            runValidators: true,
+        })
+            .then((user) => {
+                if (!user) {
+                    res.status(404).json({ message: "No user found with this id!" });
+                    return;
+                }
+                res.json(user);
+            })
+            .catch((err) => res.json(err));
+    },
+
     // delete a user
     async deleteUser(req, res) {
         try {
