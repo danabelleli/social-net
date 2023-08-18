@@ -31,6 +31,15 @@ module.exports = {
     async createThought(req, res) {
         try {
             const thought = await Thought.create(req.body);
+            const userData = await User.findOneAndUpdate(
+                { username: req.body.username },
+                { $push: { thoughts: thought._id } },
+                { new: true }
+            )
+
+            if (!userData) {
+                return res.status(404).json({ message: 'user not found' });
+            }
             res.json(thought);
         } catch (err) {
             console.log(err);
@@ -71,4 +80,23 @@ module.exports = {
             res.status(500).json(err);
         }
     },
+
+    // create a reaction
+    async createReaction(req, res) {
+        try {
+            const thought = await Thought.findOneAndUpdate(
+                { _id: req.params.thoughtId },
+                { $addToSet: { reactions: req.body } },
+                { new: true }
+            )
+
+            if (!thought) {
+                res.status(404).json({ message: 'No thought with this id!' });
+            }
+            res.json(thought);
+        }
+        catch (err) {
+            res.status(500).json(err);
+        }
+    }
 };
